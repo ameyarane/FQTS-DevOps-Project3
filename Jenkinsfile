@@ -23,6 +23,7 @@ pipeline {
                         sh """
                             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                            cd CICDInfra/Project3-ec2
                             terraform init -backend-config=${backendFile}
                         """
                     }
@@ -36,7 +37,10 @@ pipeline {
                     if (env.BRANCH_NAME == 'prod') { envFile = 'prod.tfvars' }
                     else if (env.BRANCH_NAME == 'stage') { envFile = 'stage.tfvars' }
                     else { envFile = 'dev.tfvars' }
-                    sh "terraform plan --var-file=${envFile} -out=tfplan"
+                    sh """
+                        cd CICDInfra/Project3-ec2
+                        terraform plan --var-file=${envFile} -out=tfplan
+                    """
                 }
             }
         }
@@ -57,6 +61,7 @@ pipeline {
                     sh """
                         export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                        cd CICDInfra/Project3-ec2
                         terraform apply -auto-approve tfplan
                     """
                 }
@@ -66,7 +71,7 @@ pipeline {
     post {
         always {
             script {
-                sh "terraform output || true"
+                sh "cd CICDInfra/Project3-ec2 && terraform output || true"
             }
         }
     }
