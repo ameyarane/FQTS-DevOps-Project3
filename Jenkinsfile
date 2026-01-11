@@ -1,89 +1,73 @@
 pipeline {
-  agent { label 'terraform' }   // Use your agent's label here
-  environment {
-    AWS_DEFAULT_REGION = 'eu-west-1'    
-  }
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    agent { label 'terraform' }
+    environment {
+        AWS_DEFAULT_REGION = 'eu-west-1'
     }
-    stage('Init & Plan Terraform') {
-      steps {
-        withCredentials([
-          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-          sh 'terraform init'
-          //sh 'terraform plan -out=tfplan'
-          //sh "terraform plan -var='environment=${env.BRANCH_NAME}' -out=tfplan"
-          sh "terraform plan --var-file='dev.tfvars'"
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
-    stage('Apply Terraform') {
-      when {
-        branch 'prod'
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-          input message: "Do you want to apply changes to production?"
-          //sh 'terraform apply tfplan'
-          //sh "terraform apply -var='environment=${env.BRANCH_NAME}' -auto-approve"
-          sh "terraform plan --var-file='prod.tfvars'"
+        stage('Terraform Init') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    script {
+                        def backendFile = ''
+                        if (env.BRANCH_NAME == 'prod') { backendFile = 'backend-prod.conf' }
+                        else if (env.BRANCH_NAME == 'stage') { backendFile = 'backend-stage.conf' }
+                        else { backendFile = 'backend-dev.conf' }
+                        sh """
+                            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                            terraform init -backend-config=${backendFile}
+                        """
+                    }
+                }
+            }
         }
-      }
-    }
-    stage('Apply to Stage') {
-      when {
-        branch 'stage'
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-          //sh "terraform apply -var='environment=${env.BRANCH_NAME}' -auto-approve"
-          sh "terraform plan --var-file='stage.tfvars'"
+        stage('Terraform Plan') {
+            steps {
+                script {
+                    def envFile = ''
+                    if (env.BRANCH_NAME == 'prod') { envFile = 'prod.tfvars' }
+                    else if (env.BRANCH_NAME == 'stage') { envFile = 'stage.tfvars' }
+                    else { envFile = 'dev.tfvars' }
+                    sh "terraform plan --var-file=${envFile} -out=tfplan"
+                }
+            }
         }
-      }
-    }
-    stage('Apply to dev') {
-      when {
-        branch 'dev'
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-          //sh "terraform apply -var='environment=${env.BRANCH_NAME}' -auto-approve"
-          sh "terraform plan --var-file='dev.tfvars'"
+        stage('Terraform Apply') {
+            when {
+                anyOf {
+                    branch 'dev'
+                    branch 'stage'
+                    branch 'prod'
+                }
+            }
+            steps {
+                input message: "Apply changes to ${env.BRANCH_NAME}?"
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    sh """
+                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                        terraform apply -auto-approve tfplan
+                    """
+                }
+            }
         }
-      }
     }
-
-  }
-//   post {
-//   always {
-//     withCredentials([
-//       string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-//       string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-//     ]) {
-//       script {
-//         def ip = sh(script: "terraform output -raw instance_public_ip", returnStdout: true).trim()
-//         echo "EC2 Instance Public IP: ${ip}"
-//       }
-//     }
-//   }
-// }
-
+    post {
+        always {
+            script {
+                sh "terraform output || true"
+            }
+        }
+    }
 }
-
-
-// remote state management with s3 with file locking 
-
