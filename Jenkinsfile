@@ -1,8 +1,7 @@
 pipeline {
   agent { label 'terraform' }   // Use your agent's label here
   environment {
-    AWS_DEFAULT_REGION = 'eu-west-1'
-    TF_VAR_instance_type = 't2.micro'
+    AWS_DEFAULT_REGION = 'eu-west-1'    
   }
   stages {
     stage('Checkout') {
