@@ -18,7 +18,7 @@ pipeline {
                         else if (env.BRANCH_NAME == 'stage') { backendFile = 'backend-stage.conf' }
                         else { backendFile = 'backend-dev.conf' }                        
                         sh """
-                                terraform init -backend-config=${backendFile} -input=false -migrate-state -reconfigure
+                                terraform init -backend-config=${backendFile} -input=false -reconfigure
                         """
 
 
