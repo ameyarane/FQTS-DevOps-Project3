@@ -17,9 +17,14 @@ pipeline {
                         if (env.BRANCH_NAME == 'prod') { backendFile = 'backend-prod.conf' }
                         else if (env.BRANCH_NAME == 'stage') { backendFile = 'backend-stage.conf' }
                         else { backendFile = 'backend-dev.conf' }
+                        // sh """
+                        //     terraform init -backend-config=${backendFile}
+                        // """
                         sh """
-                            terraform init -backend-config=${backendFile}
+                                terraform init -backend-config=${backendFile} -input=false -migrate-state
                         """
+
+
                     }
                 }
             }
