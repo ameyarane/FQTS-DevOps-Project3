@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Terraform Init') {
             steps {
-                dir('CICDInfra/Project3-ALB') {
+                dir('CICDInfra/Project3-alb') {
                     script {
                         def backendFile = ''
                         if (env.BRANCH_NAME == 'prod') { backendFile = 'backend-prod.conf' }
@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Terraform Plan') {
             steps {
-                dir('CICDInfra/Project3-ALB') {
+                dir('CICDInfra/Project3-alb') {
                     script {
                         def envFile = ''
                         if (env.BRANCH_NAME == 'prod') { envFile = 'prod.tfvars' }
@@ -49,7 +49,7 @@ pipeline {
             }
             steps {
                 input message: "Apply changes to ${env.BRANCH_NAME}?"
-                dir('CICDInfra/Project3-ALB') {
+                dir('CICDInfra/Project3-alb') {
                     sh """
                         terraform apply -auto-approve tfplan
                     """
@@ -59,7 +59,7 @@ pipeline {
     }
     post {
         always {
-            dir('CICDInfra/Project3-ALB') {
+            dir('CICDInfra/Project3-alb') {
                 script {
                     sh "terraform output || true"
                 }
