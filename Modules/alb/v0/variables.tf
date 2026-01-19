@@ -14,3 +14,14 @@ variable "vpc_id"               { type = string }
 variable "health_check_path"    { type = string }
 variable "listener_port"        { type = number }
 variable "listener_protocol"    { type = string }
+
+
+variable "instance_type" { type = string }
+variable "key_name" { type = string }
+variable "ami_id" { type = string }
+
+variable "desired_capacity" { type = number }
+variable "min_size" { type = number }
+variable "max_size" { type = number }
+
+variable "asg_subnets" { type = list(string) }

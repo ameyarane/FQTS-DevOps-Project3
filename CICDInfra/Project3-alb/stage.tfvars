@@ -10,3 +10,13 @@ vpc_id                 = "vpc-020cdb293828a27e7"
 health_check_path      = "/"
 listener_port          = 80
 listener_protocol      = "HTTP"
+
+instance_type        = "t3.micro"
+key_name             = "fqts-demo-key"
+ami_id               = "ami-0f64121fa59598bf7"  # change to your AMI
+
+desired_capacity     = 2
+min_size             = 1
+max_size             = 3
+
+asg_subnets          = ["subnet-0445ad7f30dc49eb0","subnet-0ee3e27d41ca239d6"]

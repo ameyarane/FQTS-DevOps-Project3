@@ -10,3 +10,13 @@ variable "vpc_id" {}
 variable "health_check_path" {}
 variable "listener_port" { type = number }
 variable "listener_protocol" {}
+
+variable "instance_type" { type = string }
+variable "key_name" { type = string }
+variable "ami_id" { type = string }
+
+variable "desired_capacity" { type = number }
+variable "min_size" { type = number }
+variable "max_size" { type = number }
+
+variable "asg_subnets" { type = list(string) }
