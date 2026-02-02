@@ -1,0 +1,69 @@
+dev:
+
+  ec2:
+
+    enable: false
+
+    delete: false
+
+    path: CICDInfra/Project3-ec2
+
+    tfvars: CICDInfra/Project3-ec2/dev.tfvars
+
+  alb:
+
+    enable: false
+
+    delete: false
+
+    path: CICDInfra/Project3-alb
+
+    tfvars: CICDInfra/Project3-alb/dev.tfvars
+
+stage:
+
+  ec2:
+
+    enable: false
+
+    delete: false
+
+    path: CICDInfra/Project3-ec2
+
+    tfvars: CICDInfra/Project3-ec2/staging.tfvars
+
+  alb:
+
+    enable: false
+
+    delete: false
+
+    path: CICDInfra/Project3-alb
+
+    tfvars: CICDInfra/Project3-alb/staging.tfvars
+
+
+prod:
+
+  ec2:
+
+    enable: false
+
+    delete: false
+
+    path: CICDInfra/Project3-ec2
+
+    tfvars: CICDInfra/Project3-ec2/prod.tfvars
+
+  alb:
+
+    enable: false
+
+    delete: false
+
+    path: CICDInfra/Project3-alb
+
+    tfvars: CICDInfra/Project3-alb/prod.tfvars
+ 
+
+ 
